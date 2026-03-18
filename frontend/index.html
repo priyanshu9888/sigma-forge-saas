@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FigmaForge — Figma to Production Code</title>
+  <meta name="description" content="Convert any Figma design into production-ready React, Next.js, Vue, Flutter or SwiftUI code in seconds. Version-safe. AI-powered." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0b0f14;
+      --white:   #eef4f8;
+      --cream:   #d9e2ea;
+      --amber:   #3ee6c7;
+      --amber-d: #1db9a2;
+      --slate:   #0f1622;
+      --muted:   #95a3b3;
+      --border:  rgba(62,230,199,0.18);
+      --ff-display: 'Space Grotesk', sans-serif;
+      --ff-mono:    'JetBrains Mono', monospace;
+      --ff-body:    'Spline Sans', sans-serif;
+      --radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background:
+        radial-gradient(900px 520px at 85% -10%, rgba(62,230,199,0.18), transparent 60%),
+        radial-gradient(700px 420px at 10% 10%, rgba(255,179,71,0.12), transparent 55%),
+        var(--black);
+      color: var(--white);
+      font-family: var(--ff-body);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ── Grain overlay ─────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1000; opacity: 0.4;
+    }
+
+    /* ── Nav ───────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,8,8,0.85);
+      backdrop-filter: blur(20px);
+    }
+
+    .nav-logo {
+      font-family: var(--ff-display);
+      font-size: 1.25rem; font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo span {
+      display: inline-block; width: 28px; height: 28px;
+      background: var(--amber);
+      border-radius: 6px;
+      position: relative;
+    }
+    .nav-logo span::after {
+      content: '⌘';
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--black);
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: 0.875rem; font-weight: 400;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+
+    .nav-cta {
+      background: var(--amber); color: var(--black) !important;
+      padding: 9px 22px; border-radius: 8px;
+      font-weight: 600 !important; font-size: 0.875rem !important;
+      transition: background 0.2s, transform 0.15s !important;
+    }
+    .nav-cta:hover { background: var(--amber-d) !important; transform: translateY(-1px); }
+
+    /* ── Hero ──────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 120px 24px 80px;
+      position: relative; overflow: hidden;
+      text-align: center;
+    }
+
+    .hero-glow {
+      position: absolute; top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 600px;
+      background: radial-gradient(ellipse at center, rgba(62,230,199,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(62,230,199,0.1);
+      border: 1px solid rgba(62,230,199,0.3);
+      color: var(--amber); padding: 6px 16px;
+      border-radius: 100px; font-size: 0.78rem;
+      font-family: var(--ff-mono); font-weight: 500;
+      margin-bottom: 40px; letter-spacing: 0.05em;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-badge::before { content: '◆'; font-size: 8px; }
+
+    .hero-title {
+      font-family: var(--ff-display);
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 800; line-height: 0.95;
+      letter-spacing: -0.04em;
+      max-width: 900px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: var(--amber);
+      position: relative;
+    }
+
+    .hero-sub {
+      margin-top: 28px;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted); max-width: 560px;
+      font-weight: 300; line-height: 1.7;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex; gap: 16px; margin-top: 48px;
+      animation: fadeUp 0.6s 0.3s ease both;
+      flex-wrap: wrap; justify-content: center;
+    }
+
+    .btn-primary {
+      background: var(--amber); color: var(--black);
+      padding: 14px 32px; border-radius: 10px;
+      font-family: var(--ff-display); font-weight: 700;
+      font-size: 0.95rem; text-decoration: none;
+      border: none; cursor: pointer;
+      transition: all 0.2s; letter-spacing: -0.02em;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { background: var(--amber-d); transform: translateY(-2px); box-shadow: 0 12px 30px rgba(62,230,199,0.3); }
+
+    .btn-ghost {
+      background: transparent; color: var(--white);
+      padding: 14px 32px; border-radius: 10px;
+      font-family: var(--ff-display); font-weight: 600;
+      font-size: 0.95rem; text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.15); cursor: pointer;
+      transition: all 0.2s; letter-spacing: -0.02em;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05); }
+
+    /* ── Hero Demo ─────────────────────────────────── */
+    .hero-demo {
+      margin-top: 80px; width: 100%; max-width: 900px;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .demo-window {
+      background: var(--slate);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(62,230,199,0.05);
+    }
+
+    .demo-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .demo-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .demo-dot:nth-child(1) { background: #ff5f57; }
+    .demo-dot:nth-child(2) { background: #febc2e; }
+    .demo-dot:nth-child(3) { background: #28c840; }
+    .demo-title-bar {
+      flex: 1; text-align: center;
+      font-family: var(--ff-mono); font-size: 0.75rem; color: var(--muted);
+    }
+
+    .demo-body {
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: 360px;
+    }
+
+    .demo-input {
+      padding: 32px;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .demo-input-label {
+      font-family: var(--ff-mono); font-size: 0.7rem;
+      color: var(--amber); letter-spacing: 0.1em;
+      margin-bottom: 12px; display: block;
+    }
+    .demo-input-field {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 10px 14px;
+      font-family: var(--ff-mono); font-size: 0.78rem;
+      color: var(--white); width: 100%; margin-bottom: 16px;
+    }
+    .demo-selects { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .demo-select-item {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 10px 14px;
+      font-family: var(--ff-mono); font-size: 0.75rem; color: var(--muted);
+    }
+    .demo-select-item span { color: var(--white); display: block; font-size: 0.8rem; }
+
+    .demo-generate-btn {
+      width: 100%; background: var(--amber); color: var(--black);
+      border: none; border-radius: 8px; padding: 12px;
+      font-family: var(--ff-display); font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; letter-spacing: -0.02em;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+
+    .demo-output { padding: 32px; position: relative; overflow: hidden; }
+    .demo-output-label {
+      font-family: var(--ff-mono); font-size: 0.7rem;
+      color: var(--amber); letter-spacing: 0.1em; margin-bottom: 16px; display: block;
+    }
+    .demo-code {
+      font-family: var(--ff-mono); font-size: 0.72rem;
+      line-height: 1.7; color: #aaa;
+    }
+    .demo-code .kw  { color: #c792ea; }
+    .demo-code .fn  { color: #82aaff; }
+    .demo-code .str { color: #c3e88d; }
+    .demo-code .tag { color: #f07178; }
+    .demo-code .cls { color: var(--amber); }
+    .demo-code .cm  { color: #546e7a; }
+
+    /* ── Stats ─────────────────────────────────────── */
+    .stats {
+      display: flex; justify-content: center; gap: 64px;
+      padding: 48px 24px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: var(--ff-display); font-size: 2.5rem;
+      font-weight: 800; color: var(--amber); letter-spacing: -0.05em;
+    }
+    .stat-label { font-size: 0.825rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Section shared ────────────────────────────── */
+    .section { padding: 120px 24px; max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      font-family: var(--ff-mono); font-size: 0.72rem;
+      color: var(--amber); letter-spacing: 0.12em;
+      margin-bottom: 20px; display: block;
+    }
+    .section-title {
+      font-family: var(--ff-display); font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    .section-sub {
+      color: var(--muted); font-size: 1.05rem;
+      max-width: 520px; line-height: 1.7; font-weight: 300;
+    }
+
+    /* ── How it works ──────────────────────────────── */
+    .steps {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 2px; margin-top: 64px;
+      background: var(--border); border-radius: 16px; overflow: hidden;
+    }
+    .step {
+      background: var(--black); padding: 48px 40px;
+      position: relative;
+    }
+    .step-num {
+      font-family: var(--ff-display); font-size: 4rem;
+      font-weight: 800; color: rgba(62,230,199,0.15);
+      letter-spacing: -0.06em; line-height: 1;
+      margin-bottom: 24px;
+    }
+    .step-title {
+      font-family: var(--ff-display); font-size: 1.2rem;
+      font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em;
+    }
+    .step-desc { color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+
+    /* ── Framework Cards ───────────────────────────── */
+    .frameworks {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 16px; margin-top: 64px;
+    }
+    .fw-card {
+      background: var(--slate);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; padding: 32px 24px;
+      text-align: center; cursor: default;
+      transition: all 0.25s; position: relative; overflow: hidden;
+    }
+    .fw-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, var(--fw-color,rgba(62,230,199,0.1)) 0%, transparent 70%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .fw-card:hover { border-color: rgba(62,230,199,0.3); transform: translateY(-4px); }
+    .fw-card:hover::before { opacity: 1; }
+    .fw-icon { font-size: 2.2rem; margin-bottom: 16px; display: block; }
+    .fw-name {
+      font-family: var(--ff-display); font-weight: 700;
+      font-size: 0.95rem; letter-spacing: -0.02em;
+    }
+    .fw-versions {
+      font-family: var(--ff-mono); font-size: 0.68rem;
+      color: var(--muted); margin-top: 6px;
+    }
+
+    /* ── Pricing ───────────────────────────────────── */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 24px; margin-top: 64px;
+    }
+    .price-card {
+      background: var(--slate);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px; padding: 40px 36px;
+      position: relative; transition: transform 0.2s;
+    }
+    .price-card:hover { transform: translateY(-4px); }
+    .price-card.featured {
+      border-color: var(--amber);
+      background: linear-gradient(135deg, rgba(62,230,199,0.06) 0%, var(--slate) 60%);
+    }
+    .price-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--amber); color: var(--black);
+      padding: 4px 16px; border-radius: 100px;
+      font-family: var(--ff-mono); font-size: 0.7rem; font-weight: 500;
+      letter-spacing: 0.08em; white-space: nowrap;
+    }
+    .price-plan {
+      font-family: var(--ff-mono); font-size: 0.72rem;
+      color: var(--muted); letter-spacing: 0.1em; margin-bottom: 16px;
+    }
+    .price-amount {
+      font-family: var(--ff-display); font-size: 3.5rem;
+      font-weight: 800; letter-spacing: -0.05em; line-height: 1;
+    }
+    .price-amount sup { font-size: 1.5rem; vertical-align: super; }
+    .price-amount sub { font-size: 1rem; color: var(--muted); }
+    .price-desc { color: var(--muted); font-size: 0.875rem; margin: 12px 0 32px; }
+    .price-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+    .price-features li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.875rem; color: #ccc;
+    }
+    .price-features li::before { content: '✓'; color: var(--amber); font-weight: 700; flex-shrink: 0; }
+    .price-features li.off { color: var(--muted); }
+    .price-features li.off::before { content: '–'; color: var(--muted); }
+
+    .btn-plan {
+      width: 100%; padding: 14px;
+      border-radius: 10px; font-family: var(--ff-display);
+      font-weight: 700; font-size: 0.9rem; cursor: pointer;
+      border: none; letter-spacing: -0.02em; transition: all 0.2s;
+    }
+    .btn-plan-outline {
+      background: transparent; color: var(--white);
+      border: 1px solid rgba(255,255,255,0.2) !important;
+    }
+    .btn-plan-outline:hover { border-color: rgba(255,255,255,0.5) !important; background: rgba(255,255,255,0.05); }
+    .btn-plan-fill { background: var(--amber); color: var(--black); border: none !important; }
+    .btn-plan-fill:hover { background: var(--amber-d); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(62,230,199,0.35); }
+
+    /* ── FAQ ───────────────────────────────────────── */
+    .faq-list { margin-top: 56px; display: flex; flex-direction: column; gap: 2px; }
+    .faq-item {
+      border-radius: 12px; overflow: hidden;
+      background: var(--slate);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .faq-q {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 28px; cursor: pointer;
+      font-family: var(--ff-display); font-weight: 600;
+      font-size: 0.95rem; letter-spacing: -0.02em;
+      transition: background 0.2s; gap: 20px;
+    }
+    .faq-q:hover { background: rgba(255,255,255,0.03); }
+    .faq-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(62,230,199,0.1); color: var(--amber);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0; transition: transform 0.3s;
+    }
+    .faq-item.open .faq-icon { transform: rotate(45deg); }
+    .faq-a {
+      padding: 0 28px; max-height: 0; overflow: hidden;
+      color: var(--muted); font-size: 0.9rem; line-height: 1.8;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+    .faq-item.open .faq-a { max-height: 200px; padding: 0 28px 22px; }
+
+    /* ── CTA ───────────────────────────────────────── */
+    .cta-section {
+      margin: 0 24px 120px;
+      background: linear-gradient(135deg, var(--amber) 0%, var(--amber-d) 100%);
+      border-radius: 24px; padding: 80px 48px;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+    }
+    .cta-title {
+      font-family: var(--ff-display); font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800; color: var(--black); letter-spacing: -0.04em;
+      line-height: 1.05; margin-bottom: 20px;
+    }
+    .cta-sub { color: rgba(0,0,0,0.6); font-size: 1.05rem; margin-bottom: 40px; }
+    .btn-cta-dark {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--black); color: var(--white);
+      padding: 16px 36px; border-radius: 12px;
+      font-family: var(--ff-display); font-weight: 700;
+      font-size: 1rem; text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.2s; letter-spacing: -0.02em;
+    }
+    .btn-cta-dark:hover { background: var(--slate); transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+
+    /* ── Footer ────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 48px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: 1rem; letter-spacing: -0.03em; color: var(--white);
+    }
+    .footer-links { display: flex; gap: 28px; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--white); }
+    .footer-copy { color: var(--muted); font-size: 0.8rem; }
+
+    /* ── Animations ────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(32px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Responsive ────────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      .demo-body { grid-template-columns: 1fr; }
+      .demo-input { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+      .steps { grid-template-columns: 1fr; }
+      .frameworks { grid-template-columns: repeat(3,1fr); }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .stats { gap: 32px; flex-wrap: wrap; }
+      footer { flex-direction: column; gap: 24px; text-align: center; }
+    }
+    @media (max-width: 560px) {
+      .frameworks { grid-template-columns: repeat(2,1fr); }
+      .hero-actions { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ──────────────────────────────────────────── -->
+<nav>
+  <a href="#" class="nav-logo">
+    <span></span>FigmaForge
+  </a>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#frameworks">Frameworks</a>
+    <a href="#pricing">Pricing</a>
+    <a href="https://github.com/YOUR_USERNAME/figmaforge" target="_blank">GitHub ↗</a>
+    <a href="#" data-auth-action="login" data-auth-show="signed-out">Sign in</a>
+    <a href="signup.html" data-auth-action="signup" data-auth-show="signed-out">Create account</a>
+    <a href="#" data-auth-action="logout" data-auth-show="signed-in" style="display:none">Sign out</a>
+    <a href="dashboard.html" class="nav-cta">Start for free →</a>
+  </div>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <div class="hero-badge">NOW IN PUBLIC BETA — FREE TO START</div>
+
+  <h1 class="hero-title">
+    Figma designs<br/>into <em>production</em><br/>code
+  </h1>
+
+  <p class="hero-sub">
+    Paste your Figma URL. Pick your framework and version.
+    Get a complete, runnable project — in under 10 seconds.
+  </p>
+
+  <div class="hero-actions">
+    <a href="dashboard.html" class="btn-primary">
+      Generate free →
+    </a>
+    <a href="#how" class="btn-ghost">
+      See how it works
+    </a>
+  </div>
+
+  <!-- Live demo window -->
+  <div class="hero-demo">
+    <div class="demo-window">
+      <div class="demo-bar">
+        <div class="demo-dot"></div>
+        <div class="demo-dot"></div>
+        <div class="demo-dot"></div>
+        <div class="demo-title-bar">figmaforge.app — Generate</div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-input">
+          <span class="demo-input-label">FIGMA URL</span>
+          <div class="demo-input-field">figma.com/file/xK9mP2…/Dashboard-v3</div>
+          <div class="demo-selects">
+            <div class="demo-select-item">Framework<span>Next.js</span></div>
+            <div class="demo-select-item">Version<span>14</span></div>
+            <div class="demo-select-item">Styling<span>Tailwind 3</span></div>
+            <div class="demo-select-item">Package<span>pnpm</span></div>
+          </div>
+          <button class="demo-generate-btn">⚡ Generate Project</button>
+        </div>
+        <div class="demo-output">
+          <span class="demo-output-label">GENERATED — src/components/Navbar.jsx</span>
+          <pre class="demo-code"><span class="cm">// Auto-generated by FigmaForge</span>
+<span class="kw">import</span> React <span class="kw">from</span> <span class="str">"react"</span><span class="cm">;</span>
+
+<span class="kw">export default function</span> <span class="fn">Navbar</span>() {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;nav</span> <span class="cls">className</span>=<span class="str">"flex flex-row
+      items-center px-6 py-4
+      bg-[#0a0a0a] shadow-md"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;span</span> <span class="cls">className</span>=<span class="str">"text-2xl
+        font-bold text-white"</span><span class="tag">&gt;</span>
+        FigmaForge
+      <span class="tag">&lt;/span&gt;</span>
+      <span class="tag">&lt;button</span> <span class="cls">className</span>=<span class="str">"px-4 py-2
+        bg-[#e8a020] text-black
+        rounded-lg font-semibold"</span><span class="tag">&gt;</span>
+        Login
+      <span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/nav&gt;</span>
+  )<span class="cm">;</span>
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats ─────────────────────────────────────────── -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">5</div>
+    <div class="stat-label">Frameworks supported</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">&lt;10s</div>
+    <div class="stat-label">Average generation time</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">47</div>
+    <div class="stat-label">Tests passing</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">$0</div>
+    <div class="stat-label">To get started</div>
+  </div>
+</div>
+
+<!-- ── How it works ──────────────────────────────────── -->
+<div id="how">
+  <div class="section">
+    <span class="section-tag reveal">HOW IT WORKS</span>
+    <h2 class="section-title reveal">Three steps.<br/>One working project.</h2>
+    <p class="section-sub reveal">No CLI to install. No config files. No figuring out what version of Tailwind works with Next.js 15.</p>
+
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Paste your Figma URL</div>
+        <div class="step-desc">Copy the URL from any Figma file you own or have access to. FigmaForge reads frames, components, colors, typography, and layout directly via the Figma API.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Choose framework & version</div>
+        <div class="step-desc">Pick React, Next.js, Vue, Flutter, or SwiftUI. Select your exact version. FigmaForge automatically pins compatible dependencies and warns you about conflicts.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Download & run</div>
+        <div class="step-desc">Get a complete zip with components, pages, package.json, Tailwind config, and a README. Unzip, run your install command, and you're live.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Frameworks ─────────────────────────────────────── -->
+<div id="frameworks">
+  <div class="section">
+    <span class="section-tag reveal">SUPPORTED FRAMEWORKS</span>
+    <h2 class="section-title reveal">One design.<br/>Any stack.</h2>
+    <p class="section-sub reveal">Generate the same Figma design for your exact framework and version — no dependency conflicts, no manual wiring.</p>
+
+    <div class="frameworks reveal">
+      <div class="fw-card">
+        <span class="fw-icon">⚛️</span>
+        <div class="fw-name">React</div>
+        <div class="fw-versions">v17 · v18 · v19</div>
+      </div>
+      <div class="fw-card">
+        <span class="fw-icon">🔺</span>
+        <div class="fw-name">Next.js</div>
+        <div class="fw-versions">v12 · v13 · v14 · v15</div>
+      </div>
+      <div class="fw-card">
+        <span class="fw-icon">💚</span>
+        <div class="fw-name">Vue</div>
+        <div class="fw-versions">v2 · v3</div>
+      </div>
+      <div class="fw-card">
+        <span class="fw-icon">📱</span>
+        <div class="fw-name">Flutter</div>
+        <div class="fw-versions">v2 · v3</div>
+      </div>
+      <div class="fw-card">
+        <span class="fw-icon">🍎</span>
+        <div class="fw-name">SwiftUI</div>
+        <div class="fw-versions">v4 · v5 · v6</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Pricing ────────────────────────────────────────── -->
+<div id="pricing">
+  <div class="section">
+    <span class="section-tag reveal">PRICING</span>
+    <h2 class="section-title reveal">Simple pricing.<br/>Cancel anytime.</h2>
+    <p class="section-sub reveal">Start free. Pay only when you need more power. No hidden fees, no seat minimums.</p>
+
+    <div class="pricing-grid reveal">
+
+      <!-- Free -->
+      <div class="price-card">
+        <div class="price-plan">FREE PLAN</div>
+        <div class="price-amount" data-price-usd="0">
+          <sup data-currency-symbol>$</sup><span data-currency-number>0</span><sub>/mo</sub>
+        </div>
+        <div class="price-desc">Perfect for trying it out</div>
+        <ul class="price-features">
+          <li>3 generations per month</li>
+          <li>React & Next.js only</li>
+          <li>Tailwind CSS support</li>
+          <li>Download as zip</li>
+          <li class="off">Vue, Flutter, SwiftUI</li>
+          <li class="off">AI code optimizer</li>
+          <li class="off">API access</li>
+          <li class="off">Priority support</li>
+        </ul>
+        <button class="btn-plan btn-plan-outline" onclick="window.location='dashboard.html'">Get started free</button>
+      </div>
+
+      <!-- Pro -->
+      <div class="price-card featured">
+        <div class="price-badge">MOST POPULAR</div>
+        <div class="price-plan">PRO PLAN</div>
+        <div class="price-amount" data-price-usd="29">
+          <sup data-currency-symbol>$</sup><span data-currency-number>29</span><sub>/mo</sub>
+        </div>
+        <div class="price-desc">For professional developers</div>
+        <ul class="price-features">
+          <li>Unlimited generations</li>
+          <li>All 5 frameworks</li>
+          <li>All versions + Tailwind 4</li>
+          <li>AI code optimizer</li>
+          <li>TypeScript output</li>
+          <li>Download as zip</li>
+          <li>REST API access</li>
+          <li class="off">Priority support</li>
+        </ul>
+        <button class="btn-plan btn-plan-fill" onclick="window.location='checkout.html?plan=pro'">
+          Start Pro — <span data-price-inline-usd="29">$29</span>/mo
+        </button>
+      </div>
+
+      <!-- Team -->
+      <div class="price-card">
+        <div class="price-plan">TEAM PLAN</div>
+        <div class="price-amount" data-price-usd="79">
+          <sup data-currency-symbol>$</sup><span data-currency-number>79</span><sub>/mo</sub>
+        </div>
+        <div class="price-desc">For design &amp; dev teams</div>
+        <ul class="price-features">
+          <li>Everything in Pro</li>
+          <li>5 seats included</li>
+          <li>Shared project history</li>
+          <li>Team API key</li>
+          <li>Design token export</li>
+          <li>Priority support</li>
+          <li>Custom onboarding</li>
+          <li>SLA guarantee</li>
+        </ul>
+        <button class="btn-plan btn-plan-outline" onclick="window.location='checkout.html?plan=team'">
+          Start Team — <span data-price-inline-usd="79">$79</span>/mo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FAQ ───────────────────────────────────────────── -->
+<div class="section" style="padding-top:0">
+  <span class="section-tag reveal">FAQ</span>
+  <h2 class="section-title reveal">Common questions</h2>
+
+  <div class="faq-list reveal">
+    <div class="faq-item">
+      <div class="faq-q">Do I need to install anything?<div class="faq-icon">+</div></div>
+      <div class="faq-a">No. FigmaForge is fully web-based. You paste your Figma URL, configure your options, and download a zip. The only thing you need is a free Figma Personal Access Token, which takes 30 seconds to create.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How do I get a Figma token?<div class="faq-icon">+</div></div>
+      <div class="faq-a">Go to figma.com → click your profile icon → Settings → Personal Access Tokens → Generate new token. It's free and takes about 30 seconds. Your token is never stored on our servers — it's used only at generation time.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What does the generated code look like?<div class="faq-icon">+</div></div>
+      <div class="faq-a">Each Figma frame becomes a separate component file. Colors, spacing, border-radius, typography, and layout direction are mapped to Tailwind classes. The output is a complete runnable project — not a snippet — with package.json, config files, and a README included.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What if I pick incompatible versions?<div class="faq-icon">+</div></div>
+      <div class="faq-a">FigmaForge's version compatibility engine automatically detects conflicts before generating. For example, if you choose Next.js 12 with Tailwind 4, it warns you and offers to auto-correct to a compatible combination. No broken installs.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is the code production-ready?<div class="faq-icon">+</div></div>
+      <div class="faq-a">It's a strong starting point. Generated components are clean functional components with semantic HTML, Tailwind classes, and proper structure. For best results, use the AI optimizer (Pro plan) which refactors for accessibility, responsiveness, and reusability.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I cancel my subscription anytime?<div class="faq-icon">+</div></div>
+      <div class="faq-a">Yes. Cancel anytime from your dashboard. You keep access until the end of your billing period. No questions asked.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA ───────────────────────────────────────────── -->
+<div class="cta-section reveal">
+  <h2 class="cta-title">Stop hand-writing<br/>boilerplate.</h2>
+  <p class="cta-sub">Your Figma file is already the spec. FigmaForge turns it into code.</p>
+  <a href="dashboard.html" class="btn-cta-dark">Generate your first project free →</a>
+</div>
+
+<!-- ── Footer ────────────────────────────────────────── -->
+<footer>
+  <div class="footer-logo">⌘ FigmaForge</div>
+  <div class="footer-links">
+    <a href="https://github.com/YOUR_USERNAME/figmaforge" target="_blank">GitHub</a>
+    <a href="docs.html">Docs</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="mailto:hello@figmaforge.app">Contact</a>
+    <a href="privacy.html">Privacy</a>
+  </div>
+  <div class="footer-copy">© 2025 FigmaForge. MIT licensed.</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver(
+    entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+    { threshold: 0.12 }
+  );
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.parentElement;
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+</script>
+<script src="config.js"></script>
+<script src="currency.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+</body>
+</html>

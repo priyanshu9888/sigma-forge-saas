@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FigmaForge — API Keys</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0b0f14; --white: #eef4f8; --cream: #d9e2ea;
+      --amber: #3ee6c7; --amber-d: #1db9a2; --slate: #0f1622;
+      --card: #121a26; --muted: #95a3b3; --border: rgba(62,230,199,0.14);
+      --ff-display: 'Space Grotesk', sans-serif;
+      --ff-mono: 'JetBrains Mono', monospace;
+      --ff-body: 'Spline Sans', sans-serif;
+    }
+    body {
+      background:
+        radial-gradient(900px 520px at 85% -10%, rgba(62,230,199,0.15), transparent 60%),
+        radial-gradient(700px 420px at 10% 10%, rgba(255,179,71,0.12), transparent 55%),
+        var(--black);
+      color: var(--white); font-family: var(--ff-body); display: flex; min-height: 100vh;
+    }
+    .sidebar {
+      width: 240px; flex-shrink: 0; background: var(--slate);
+      border-right: 1px solid var(--border); display: flex; flex-direction: column;
+      padding: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px; padding: 24px 20px;
+      border-bottom: 1px solid var(--border); font-family: var(--ff-display); font-weight: 800;
+      font-size: 1rem; letter-spacing: -0.03em; color: var(--white);
+    }
+    .logo-icon {
+      width: 30px; height: 30px; background: var(--amber); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--black); font-weight: 900;
+    }
+    .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px;
+      cursor: pointer; font-size: 0.875rem; color: var(--muted); transition: all 0.15s; text-decoration: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+    .nav-item.active { background: rgba(62,230,199,0.1); color: var(--amber); }
+    .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+    .sidebar-bottom { padding: 16px 12px; border-top: 1px solid var(--border); }
+    .upgrade-btn {
+      width: 100%; padding: 10px; background: var(--amber); color: var(--black);
+      border: none; border-radius: 8px; font-family: var(--ff-display); font-weight: 700; font-size: 0.8rem;
+      cursor: pointer; letter-spacing: -0.02em; transition: background 0.2s;
+    }
+    .upgrade-btn:hover { background: var(--amber-d); }
+    .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 36px; border-bottom: 1px solid var(--border);
+      background: rgba(11,15,20,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 40;
+    }
+    .topbar-title { font-family: var(--ff-display); font-weight: 700; font-size: 1.1rem; letter-spacing: -0.03em; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-plan {
+      background: rgba(62,230,199,0.1); border: 1px solid rgba(62,230,199,0.25);
+      color: var(--amber); padding: 5px 12px; border-radius: 6px; font-family: var(--ff-mono);
+      font-size: 0.7rem; letter-spacing: 0.08em;
+    }
+    .topbar-user {
+      font-size: 0.8rem; color: var(--muted);
+      max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .topbar-btn {
+      background: transparent; color: var(--white);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px; padding: 6px 10px;
+      font-family: var(--ff-display); font-weight: 600; font-size: 0.75rem;
+      cursor: pointer; transition: background 0.2s, border 0.2s;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.3); }
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber), var(--amber-d));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--ff-display); font-weight: 800; font-size: 0.8rem; color: var(--black);
+    }
+    .content { padding: 40px 36px; flex: 1; }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px;
+    }
+    .card-title {
+      font-family: var(--ff-display); font-weight: 700; font-size: 1rem; letter-spacing: -0.03em;
+      margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+    }
+    .card-title-icon {
+      width: 28px; height: 28px; background: rgba(62,230,199,0.1);
+      border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .token-list { display: grid; gap: 12px; }
+    .token-item {
+      padding: 16px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.02);
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    }
+    .token-meta { font-family: var(--ff-mono); font-size: 0.75rem; color: var(--muted); }
+    .token-name { font-weight: 600; }
+    .btn {
+      background: var(--amber); color: var(--black); border: none; border-radius: 8px; padding: 10px 14px;
+      font-family: var(--ff-display); font-weight: 700; cursor: pointer; font-size: 0.8rem;
+    }
+    .btn-ghost {
+      background: transparent; color: var(--white); border: 1px solid rgba(255,255,255,0.15);
+    }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .content { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">⌘</div>
+    FigmaForge
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item">
+      <span class="nav-icon">⚡</span> Generate
+    </a>
+    <a href="dashboard-history.html" class="nav-item">
+      <span class="nav-icon">📁</span> History
+    </a>
+    <a href="dashboard-tokens.html" class="nav-item active">
+      <span class="nav-icon">🔑</span> API Keys
+    </a>
+    <a href="docs.html" class="nav-item">
+      <span class="nav-icon">📖</span> Docs
+    </a>
+    <a href="dashboard-settings.html" class="nav-item">
+      <span class="nav-icon">⚙️</span> Settings
+    </a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="upgrade-btn" onclick="window.location='pricing.html'">⚡ Upgrade to Pro</button>
+  </div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">API Keys</div>
+    <div class="topbar-right">
+      <div class="topbar-plan" id="planBadge">FREE PLAN</div>
+      <div class="topbar-user" data-auth-user>Guest</div>
+      <button class="topbar-btn" data-auth-action="login" data-auth-show="signed-out">Sign in</button>
+      <button class="topbar-btn" data-auth-action="signup" data-auth-show="signed-out">Create account</button>
+      <button class="topbar-btn" data-auth-action="logout" data-auth-show="signed-in" style="display:none">Sign out</button>
+      <div class="user-avatar" data-auth-avatar>G</div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-title">
+        <div class="card-title-icon">🔑</div>
+        Manage API keys
+      </div>
+      <div class="token-meta">Keys are used to authenticate API requests. Keep them secret.</div>
+      <div class="row" style="margin-top:16px;">
+        <button class="btn">Create new key</button>
+        <button class="btn btn-ghost" onclick="window.location='docs.html'">View docs</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">📦</div>
+        Active keys
+      </div>
+      <div class="token-list">
+        <div class="token-item">
+          <div>
+            <div class="token-name">Production key</div>
+            <div class="token-meta">ff_live_******************** · Created 2 days ago</div>
+          </div>
+          <div class="row">
+            <button class="btn btn-ghost">Copy</button>
+            <button class="btn">Revoke</button>
+          </div>
+        </div>
+        <div class="token-item">
+          <div>
+            <div class="token-name">Staging key</div>
+            <div class="token-meta">ff_test_******************** · Created 1 week ago</div>
+          </div>
+          <div class="row">
+            <button class="btn btn-ghost">Copy</button>
+            <button class="btn">Revoke</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>
+  const planBadge = document.getElementById('planBadge');
+  const apiUrl = (path) => (window.FF_API && window.FF_API.url ? window.FF_API.url(path) : path);
+  window.FF_AUTH.onChange(async (session) => {
+    if (!session) {
+      planBadge.textContent = 'GUEST';
+      return;
+    }
+    const accessToken = await window.FF_AUTH.getAccessToken();
+    if (!accessToken) return;
+    try {
+      const res = await fetch(apiUrl('/me'), { headers: { Authorization: `Bearer ${accessToken}` } });
+      if (!res.ok) return;
+      const data = await res.json();
+      planBadge.textContent = `${(data.plan || 'free').toUpperCase()} PLAN`;
+    } catch (_) {}
+  });
+</script>
+</body>
+</html>

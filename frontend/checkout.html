@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FigmaForge — Checkout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0b0f14;
+      --white: #eef4f8;
+      --cream: #d9e2ea;
+      --amber: #3ee6c7;
+      --amber-d: #1db9a2;
+      --slate: #0f1622;
+      --muted: #95a3b3;
+      --border: rgba(62,230,199,0.18);
+      --ff-display: 'Space Grotesk', sans-serif;
+      --ff-mono: 'JetBrains Mono', monospace;
+      --ff-body: 'Spline Sans', sans-serif;
+      --radius: 12px;
+    }
+    body {
+      background:
+        radial-gradient(900px 520px at 85% -10%, rgba(62,230,199,0.18), transparent 60%),
+        radial-gradient(700px 420px at 10% 10%, rgba(255,179,71,0.12), transparent 55%),
+        var(--black);
+      color: var(--white);
+      font-family: var(--ff-body);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11,15,20,0.82);
+      backdrop-filter: blur(18px);
+    }
+    .nav-logo {
+      font-family: var(--ff-display);
+      font-size: 1.15rem; font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo span {
+      display: inline-flex; width: 28px; height: 28px;
+      background: var(--amber);
+      border-radius: 8px; align-items: center; justify-content: center;
+      color: #041014; font-weight: 700; font-size: 14px;
+    }
+    .nav-links { display: flex; align-items: center; gap: 26px; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta {
+      background: var(--amber); color: #041014 !important;
+      padding: 9px 18px; border-radius: 10px;
+      font-weight: 700 !important; font-size: 0.85rem !important;
+      transition: transform 0.15s, background 0.2s;
+    }
+    .nav-cta:hover { background: var(--amber-d); transform: translateY(-1px); }
+    .container {
+      max-width: 900px; margin: 0 auto;
+      padding: 140px 24px 80px; position: relative; z-index: 1;
+    }
+    h1 {
+      font-family: var(--ff-display);
+      font-size: clamp(2.4rem, 4vw, 3.6rem);
+      line-height: 1.1; margin-bottom: 12px;
+      letter-spacing: -0.03em;
+    }
+    .sub { color: var(--muted); margin-bottom: 28px; }
+    .card {
+      background: rgba(15,22,34,0.9);
+      border: 1px solid var(--border);
+      border-radius: 18px; padding: 26px;
+      display: grid; gap: 18px;
+    }
+    .plan {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px; border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .plan strong { font-family: var(--ff-display); font-size: 1.2rem; }
+    .plan span { color: var(--muted); }
+    .btn {
+      background: var(--amber); color: #041014;
+      border: none; border-radius: 10px; padding: 12px 16px;
+      font-family: var(--ff-display); font-weight: 700; cursor: pointer;
+      transition: transform 0.15s, background 0.2s;
+    }
+    .btn:hover { background: var(--amber-d); transform: translateY(-1px); }
+    .note { color: var(--muted); font-size: 0.9rem; }
+    #checkoutResult { color: var(--cream); font-family: var(--ff-mono); font-size: 0.8rem; }
+    @media (max-width: 900px) {
+      nav { padding: 16px 20px; }
+      .nav-links { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="index.html"><span>⌘</span>FigmaForge</a>
+    <div class="nav-links">
+      <a href="docs.html">Docs</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="#" data-auth-action="login" data-auth-show="signed-out">Sign in</a>
+      <a href="signup.html" data-auth-action="signup" data-auth-show="signed-out">Create account</a>
+      <a href="#" data-auth-action="logout" data-auth-show="signed-in" style="display:none">Sign out</a>
+      <a href="dashboard.html" class="nav-cta">Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <h1>Checkout</h1>
+    <p class="sub">Secure payment is handled by Stripe. If the backend is not configured, we will show a demo message.</p>
+
+    <div class="card">
+      <div class="plan">
+        <div>
+          <strong id="planName">Pro</strong><br />
+          <span id="planDesc">Unlimited generations and all frameworks.</span>
+        </div>
+        <div>
+          <strong id="planPrice">$29</strong><br />
+          <span>/ month</span>
+        </div>
+      </div>
+      <button class="btn" id="checkoutBtn">Continue to payment</button>
+      <div id="checkoutResult" class="note"></div>
+      <div class="note" id="currencyNote">Prices are localized based on your browser.</div>
+      <div class="note">Tip: When the backend is running, this button will create a Stripe checkout session.</div>
+    </div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="currency.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script>
+    const apiUrl = (path) => (window.FF_API && window.FF_API.url ? window.FF_API.url(path) : path);
+    const params = new URLSearchParams(window.location.search);
+    const plan = (params.get('plan') || 'pro').toLowerCase();
+    const plans = {
+      free: { name: 'Free', priceUsd: 0, desc: '3 generations per month. React + Next.js.' },
+      pro: { name: 'Pro', priceUsd: 29, desc: 'Unlimited generations and all frameworks.' },
+      team: { name: 'Team', priceUsd: 79, desc: 'Collaboration, billing controls, and priority support.' },
+    };
+    const active = plans[plan] || plans.pro;
+    document.getElementById('planName').textContent = active.name;
+    const currencyInfo = window.FF_CURRENCY ? window.FF_CURRENCY.formatFromUsd(active.priceUsd) : null;
+    document.getElementById('planPrice').textContent = currencyInfo ? currencyInfo.text : `$${active.priceUsd}`;
+    if (currencyInfo) {
+      document.getElementById('currencyNote').textContent = `Pricing shown in ${currencyInfo.currency} based on your location.`;
+    }
+    document.getElementById('planDesc').textContent = active.desc;
+
+    document.getElementById('checkoutBtn').addEventListener('click', async () => {
+      const result = document.getElementById('checkoutResult');
+      result.textContent = 'Connecting to checkout...';
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (window.FF_AUTH) {
+          const accessToken = await window.FF_AUTH.getAccessToken();
+          if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+        }
+        const res = await fetch(apiUrl('/checkout'), {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            plan,
+            currency: currencyInfo ? currencyInfo.currency : undefined,
+            success_url: `${window.location.origin}/dashboard.html?upgraded=true`,
+            cancel_url: `${window.location.origin}/pricing.html`,
+          }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location = data.url;
+          return;
+        }
+        result.textContent = data.message || 'Checkout unavailable. Configure the backend and Stripe.';
+      } catch (e) {
+        result.textContent = 'Checkout unavailable. Configure the backend and Stripe.';
+      }
+    });
+  </script>
+</body>
+</html>

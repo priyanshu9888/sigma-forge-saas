@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FigmaForge — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0b0f14; --white: #eef4f8; --cream: #d9e2ea;
+      --amber: #3ee6c7; --amber-d: #1db9a2; --slate: #0f1622;
+      --card: #121a26; --muted: #95a3b3; --border: rgba(62,230,199,0.14);
+      --green: #2bd576; --red: #ff5c7a;
+      --ff-display: 'Space Grotesk', sans-serif;
+      --ff-mono: 'JetBrains Mono', monospace;
+      --ff-body: 'Spline Sans', sans-serif;
+    }
+    body {
+      background:
+        radial-gradient(900px 520px at 85% -10%, rgba(62,230,199,0.15), transparent 60%),
+        radial-gradient(700px 420px at 10% 10%, rgba(255,179,71,0.12), transparent 55%),
+        var(--black);
+      color: var(--white);
+      font-family: var(--ff-body);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 240px; flex-shrink: 0;
+      background: var(--slate);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: 1rem; letter-spacing: -0.03em; color: var(--white);
+    }
+    .logo-icon {
+      width: 30px; height: 30px; background: var(--amber);
+      border-radius: 7px; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--black); font-weight: 900;
+    }
+    .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px; cursor: pointer;
+      font-size: 0.875rem; color: var(--muted); transition: all 0.15s;
+      text-decoration: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--white); }
+    .nav-item.active { background: rgba(62,230,199,0.1); color: var(--amber); }
+    .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+
+    .sidebar-bottom { padding: 16px 12px; border-top: 1px solid var(--border); }
+    .usage-bar-wrap { margin-bottom: 14px; }
+    .usage-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; font-family: var(--ff-mono); }
+    .usage-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 99px; }
+    .usage-fill { height: 100%; background: var(--amber); border-radius: 99px; width: 33%; transition: width 0.5s; }
+    .upgrade-btn {
+      width: 100%; padding: 10px; background: var(--amber); color: var(--black);
+      border: none; border-radius: 8px; font-family: var(--ff-display);
+      font-weight: 700; font-size: 0.8rem; cursor: pointer; letter-spacing: -0.02em;
+      transition: background 0.2s;
+    }
+    .upgrade-btn:hover { background: var(--amber-d); }
+
+    /* ── Main ── */
+    .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 36px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,8,8,0.8); backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 40;
+    }
+    .topbar-title { font-family: var(--ff-display); font-weight: 700; font-size: 1.1rem; letter-spacing: -0.03em; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-plan {
+      background: rgba(62,230,199,0.1); border: 1px solid rgba(62,230,199,0.25);
+      color: var(--amber); padding: 5px 12px; border-radius: 6px;
+      font-family: var(--ff-mono); font-size: 0.7rem; letter-spacing: 0.08em;
+    }
+    .topbar-user {
+      font-size: 0.8rem; color: var(--muted);
+      max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .topbar-btn {
+      background: transparent; color: var(--white);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px; padding: 6px 10px;
+      font-family: var(--ff-display); font-weight: 600; font-size: 0.75rem;
+      cursor: pointer; transition: background 0.2s, border 0.2s;
+    }
+    .topbar-btn:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.3); }
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber), var(--amber-d));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--ff-display); font-weight: 800; font-size: 0.8rem; color: var(--black);
+      cursor: pointer;
+    }
+
+    /* ── Content ── */
+    .content { padding: 40px 36px; flex: 1; }
+
+    /* ── Generate Form ── */
+    .gen-layout { display: grid; grid-template-columns: 1fr 420px; gap: 28px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px;
+    }
+    .card-title {
+      font-family: var(--ff-display); font-weight: 700; font-size: 1rem;
+      letter-spacing: -0.03em; margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-title-icon {
+      width: 28px; height: 28px; background: rgba(62,230,199,0.1);
+      border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block; font-family: var(--ff-mono); font-size: 0.68rem;
+      color: var(--muted); letter-spacing: 0.1em; margin-bottom: 8px;
+    }
+    .form-input, .form-select {
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 12px 16px;
+      font-family: var(--ff-mono); font-size: 0.825rem;
+      color: var(--white); outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus { border-color: rgba(62,230,199,0.5); }
+    .form-input::placeholder { color: var(--muted); }
+    .form-select option { background: #1a1a1a; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    .token-wrap { position: relative; }
+    .token-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px;
+    }
+
+    .compat-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 6px;
+      font-family: var(--ff-mono); font-size: 0.7rem; margin-top: 8px;
+    }
+    .compat-ok { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+    .compat-warn { background: rgba(62,230,199,0.1); color: var(--amber); border: 1px solid rgba(62,230,199,0.2); }
+    .compat-err { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+    /* AI toggle */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px; background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px;
+    }
+    .toggle-info { display: flex; flex-direction: column; gap: 2px; }
+    .toggle-label { font-size: 0.875rem; font-weight: 500; }
+    .toggle-desc { font-size: 0.75rem; color: var(--muted); }
+    .toggle {
+      position: relative; width: 44px; height: 24px;
+      background: rgba(255,255,255,0.1); border-radius: 99px;
+      cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+    }
+    .toggle.on { background: var(--amber); }
+    .toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; background: white;
+      border-radius: 50%; transition: transform 0.2s;
+    }
+    .toggle.on::after { transform: translateX(20px); }
+    .pro-tag {
+      background: rgba(62,230,199,0.15); color: var(--amber);
+      font-family: var(--ff-mono); font-size: 0.6rem; padding: 2px 6px;
+      border-radius: 4px; margin-left: 6px; letter-spacing: 0.06em;
+    }
+
+    .gen-btn {
+      width: 100%; padding: 16px;
+      background: var(--amber); color: var(--black);
+      border: none; border-radius: 12px;
+      font-family: var(--ff-display); font-weight: 800;
+      font-size: 1rem; cursor: pointer; letter-spacing: -0.02em;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: all 0.2s;
+    }
+    .gen-btn:hover { background: var(--amber-d); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(62,230,199,0.3); }
+    .gen-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── Right panel ── */
+    .right-panel { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Output card */
+    .output-card { position: relative; }
+    .output-placeholder {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 280px; gap: 12px; color: var(--muted);
+    }
+    .output-icon { font-size: 2.5rem; opacity: 0.3; }
+    .output-placeholder p { font-size: 0.875rem; text-align: center; line-height: 1.6; }
+
+    .output-result { display: none; }
+    .output-result.visible { display: block; }
+
+    .output-files {
+      display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;
+    }
+    .file-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; background: rgba(255,255,255,0.03);
+      border-radius: 8px; font-family: var(--ff-mono); font-size: 0.75rem;
+    }
+    .file-icon { width: 20px; text-align: center; }
+    .file-name { flex: 1; color: #ccc; }
+    .file-size { color: var(--muted); font-size: 0.68rem; }
+
+    .download-btn {
+      width: 100%; padding: 13px;
+      background: rgba(34,197,94,0.1); color: var(--green);
+      border: 1px solid rgba(34,197,94,0.25); border-radius: 10px;
+      font-family: var(--ff-display); font-weight: 700; font-size: 0.875rem;
+      cursor: pointer; letter-spacing: -0.02em;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s;
+    }
+    .download-btn:hover { background: rgba(34,197,94,0.15); }
+
+    /* Progress */
+    .progress-card { display: none; }
+    .progress-card.visible { display: block; }
+    .progress-steps { display: flex; flex-direction: column; gap: 12px; }
+    .progress-step {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 0.875rem;
+    }
+    .progress-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,0.08); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; transition: all 0.3s;
+    }
+    .progress-dot.done { background: var(--green); }
+    .progress-dot.active { background: var(--amber); animation: pulse 1s infinite; }
+    .progress-text { color: var(--muted); }
+    .progress-text.done { color: var(--white); }
+    .progress-text.active { color: var(--amber); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* ── History ── */
+    .history-section { margin-top: 40px; }
+    .history-title {
+      font-family: var(--ff-display); font-weight: 700;
+      font-size: 0.95rem; letter-spacing: -0.02em; margin-bottom: 16px;
+      color: var(--muted);
+    }
+    .history-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .history-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      transition: border-color 0.2s; cursor: pointer;
+    }
+    .history-card:hover { border-color: rgba(62,230,199,0.3); }
+    .history-fw {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px;
+    }
+    .history-fw-badge {
+      background: rgba(62,230,199,0.1); color: var(--amber);
+      font-family: var(--ff-mono); font-size: 0.68rem;
+      padding: 3px 8px; border-radius: 5px; letter-spacing: 0.04em;
+    }
+    .history-name { font-size: 0.875rem; font-weight: 500; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-meta { font-family: var(--ff-mono); font-size: 0.68rem; color: var(--muted); }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: var(--black);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 1100px) {
+      .gen-layout { grid-template-columns: 1fr; }
+      .history-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .content { padding: 24px 20px; }
+      .history-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">⌘</div>
+    FigmaForge
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item active">
+      <span class="nav-icon">⚡</span> Generate
+    </a>
+    <a href="dashboard-history.html" class="nav-item">
+      <span class="nav-icon">📁</span> History
+    </a>
+    <a href="dashboard-tokens.html" class="nav-item">
+      <span class="nav-icon">🔑</span> API Keys
+    </a>
+    <a href="docs.html" class="nav-item">
+      <span class="nav-icon">📖</span> Docs
+    </a>
+    <a href="dashboard-settings.html" class="nav-item">
+      <span class="nav-icon">⚙️</span> Settings
+    </a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="usage-bar-wrap">
+      <div class="usage-label">
+        <span>Generations used</span>
+        <span id="usageCount">1 / 3</span>
+      </div>
+      <div class="usage-bar"><div class="usage-fill" id="usageFill"></div></div>
+    </div>
+    <button class="upgrade-btn" onclick="window.location='pricing.html'">⚡ Upgrade to Pro</button>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-title">Generate Project</div>
+    <div class="topbar-right">
+      <div class="topbar-plan" id="planBadge">FREE PLAN</div>
+      <div class="topbar-user" data-auth-user>Guest</div>
+      <button class="topbar-btn" data-auth-action="login" data-auth-show="signed-out">Sign in</button>
+      <button class="topbar-btn" data-auth-action="signup" data-auth-show="signed-out">Create account</button>
+      <button class="topbar-btn" data-auth-action="logout" data-auth-show="signed-in" style="display:none">Sign out</button>
+      <div class="user-avatar" data-auth-avatar>G</div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="gen-layout">
+
+      <!-- ── Left: Form ── -->
+      <div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-title">
+            <div class="card-title-icon">🎨</div>
+            Figma Source
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">FIGMA FILE URL OR KEY</label>
+            <input class="form-input" id="figmaUrl" type="text"
+              placeholder="https://figma.com/file/abc123xyz/My-Design  or  abc123xyz" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">FIGMA PERSONAL ACCESS TOKEN</label>
+            <div class="token-wrap">
+              <input class="form-input" id="figmaToken" type="password"
+                placeholder="fig_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+              <button class="token-toggle" onclick="toggleToken()">👁</button>
+            </div>
+            <div style="margin-top:6px;font-size:0.75rem;color:var(--muted)">
+              Get yours at
+              <a href="https://figma.com/settings" target="_blank"
+                 style="color:var(--amber);text-decoration:none">figma.com/settings</a>
+              → Personal Access Tokens. Never stored on our servers.
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-title">
+            <div class="card-title-icon">⚙️</div>
+            Framework & Version
+          </div>
+
+          <div class="form-row" style="margin-bottom:16px">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">FRAMEWORK</label>
+              <select class="form-select" id="framework" onchange="onFrameworkChange()">
+                <option value="nextjs">Next.js</option>
+                <option value="react">React</option>
+                <option value="vue">Vue</option>
+                <option value="flutter">Flutter</option>
+                <option value="swiftui">SwiftUI</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">VERSION</label>
+              <select class="form-select" id="version" onchange="checkCompat()">
+                <option value="14">14 (App Router)</option>
+                <option value="15">15 (Latest)</option>
+                <option value="13">13</option>
+                <option value="12">12 (Pages Router)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row-3" style="margin-bottom:8px">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">STYLING</label>
+              <select class="form-select" id="styling" onchange="checkCompat()">
+                <option value="tailwind">Tailwind CSS</option>
+                <option value="css-modules">CSS Modules</option>
+                <option value="none">None</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">TAILWIND VER</label>
+              <select class="form-select" id="tailwindVer" onchange="checkCompat()">
+                <option value="3">v3 (Stable)</option>
+                <option value="4">v4 (Latest)</option>
+                <option value="2">v2</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">PACKAGE MGR</label>
+              <select class="form-select" id="pm">
+                <option value="pnpm">pnpm</option>
+                <option value="npm">npm</option>
+                <option value="yarn">yarn</option>
+                <option value="bun">bun</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="compatResult"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-icon">🤖</div>
+            Options
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">AI Code Optimizer <span class="pro-tag">PRO</span></div>
+              <div class="toggle-desc">Refactors for accessibility, responsiveness, semantic HTML</div>
+            </div>
+            <div class="toggle" id="aiToggle" onclick="toggleAI()"></div>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="toggle-label">TypeScript output <span class="pro-tag">PRO</span></div>
+              <div class="toggle-desc">Generate .tsx/.ts files instead of .jsx/.js</div>
+            </div>
+            <div class="toggle" id="tsToggle" onclick="toggleTS()"></div>
+          </div>
+
+          <button class="gen-btn" id="genBtn" onclick="generate()">
+            <span id="genBtnText">⚡ Generate Project</span>
+            <div class="spinner" id="genSpinner" style="display:none"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Right: Output ── -->
+      <div class="right-panel">
+
+        <!-- Progress card -->
+        <div class="card progress-card" id="progressCard">
+          <div class="card-title">
+            <div class="card-title-icon">⚡</div>
+            Generating...
+          </div>
+          <div class="progress-steps">
+            <div class="progress-step" id="step1">
+              <div class="progress-dot" id="dot1"></div>
+              <span class="progress-text" id="txt1">Connecting to Figma API</span>
+            </div>
+            <div class="progress-step" id="step2">
+              <div class="progress-dot" id="dot2"></div>
+              <span class="progress-text" id="txt2">Parsing design tree</span>
+            </div>
+            <div class="progress-step" id="step3">
+              <div class="progress-dot" id="dot3"></div>
+              <span class="progress-text" id="txt3">Checking version compatibility</span>
+            </div>
+            <div class="progress-step" id="step4">
+              <div class="progress-dot" id="dot4"></div>
+              <span class="progress-text" id="txt4">Generating components</span>
+            </div>
+            <div class="progress-step" id="step5">
+              <div class="progress-dot" id="dot5"></div>
+              <span class="progress-text" id="txt5">Building project files</span>
+            </div>
+            <div class="progress-step" id="step6">
+              <div class="progress-dot" id="dot6"></div>
+              <span class="progress-text" id="txt6">Packaging zip</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output card -->
+        <div class="card output-card">
+          <div class="card-title">
+            <div class="card-title-icon">📦</div>
+            Output
+          </div>
+
+          <div class="output-placeholder" id="outputPlaceholder">
+            <div class="output-icon">📁</div>
+            <p>Your generated project will appear here.<br/>Fill in the form and click Generate.</p>
+          </div>
+
+          <div class="output-result" id="outputResult">
+            <div class="output-files" id="fileList"></div>
+            <button class="download-btn" id="downloadBtn">
+              ⬇ Download Project (.zip)
+            </button>
+          </div>
+        </div>
+
+        <!-- Framework info card -->
+        <div class="card" id="fwInfoCard" style="display:none">
+          <div class="card-title">
+            <div class="card-title-icon">📌</div>
+            Pinned Dependencies
+          </div>
+          <div id="fwInfoContent" style="font-family:var(--ff-mono);font-size:0.75rem;color:#aaa;line-height:2"></div>
+          <div style="margin-top:16px;padding:14px;background:rgba(255,255,255,0.03);border-radius:8px">
+            <div style="font-family:var(--ff-mono);font-size:0.7rem;color:var(--muted);margin-bottom:6px">NEXT STEPS</div>
+            <div id="nextSteps" style="font-family:var(--ff-mono);font-size:0.78rem;color:var(--amber);line-height:2"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── History ── -->
+    <div class="history-section">
+      <div class="history-title">Recent generations</div>
+      <div class="history-grid" id="historyGrid">
+        <div class="history-card">
+          <div class="history-fw"><span class="history-fw-badge">NEXT.JS 14</span></div>
+          <div class="history-name">landing-page-v2.figma</div>
+          <div class="history-meta">2 mins ago · 9 files · tailwind v3</div>
+        </div>
+        <div class="history-card">
+          <div class="history-fw"><span class="history-fw-badge">REACT 18</span></div>
+          <div class="history-name">dashboard-components.figma</div>
+          <div class="history-meta">1 hour ago · 14 files · css-modules</div>
+        </div>
+        <div class="history-card">
+          <div class="history-fw"><span class="history-fw-badge">VUE 3</span></div>
+          <div class="history-name">mobile-app-ui.figma</div>
+          <div class="history-meta">Yesterday · 7 files · tailwind v3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>
+  // ── Version maps ──────────────────────────────────
+  const VERSIONS = {
+    nextjs:  ['15','14','13','12'],
+    react:   ['19','18','17'],
+    vue:     ['3','2'],
+    flutter: ['3','2'],
+    swiftui: ['6','5','4'],
+  };
+
+  const LABELS = {
+    nextjs:  {15:'15 (Latest)',14:'14 (App Router)',13:'13',12:'12 (Pages Router)'},
+    react:   {19:'19',18:'18 (Stable)',17:'17'},
+    vue:     {3:'3 (Composition API)',2:'2 (EOL ⚠)'},
+    flutter: {3:'3 (Stable)',2:'2 (Outdated ⚠)'},
+    swiftui: {6:'6 (iOS 18)',5:'5 (iOS 17)',4:'4 (iOS 16)'},
+  };
+
+  const SHOW_STYLING = ['nextjs','react','vue'];
+
+  const PINNED = {
+    nextjs: {
+      15: {next:'15.0.3',react:'18.3.1','react-dom':'18.3.1'},
+      14: {next:'14.2.3',react:'18.2.0','react-dom':'18.2.0'},
+      13: {next:'13.5.6',react:'18.2.0','react-dom':'18.2.0'},
+      12: {next:'12.3.4',react:'17.0.2','react-dom':'17.0.2'},
+    },
+    react: {19:{react:'19.0.0','react-dom':'19.0.0'},18:{react:'18.2.0','react-dom':'18.2.0'},17:{react:'17.0.2','react-dom':'17.0.2'}},
+    vue: {3:{vue:'3.4.21'},2:{vue:'2.7.16'}},
+  };
+  const TW_PINS = {3:{tailwindcss:'3.4.1',postcss:'8.4.35'},4:{tailwindcss:'4.0.0',postcss:'8.4.41'},2:{tailwindcss:'2.2.19',postcss:'7.0.39'}};
+
+  let aiEnabled = false, tsEnabled = false;
+  let downloadUrl = null;
+
+  function toggleToken() {
+    const f = document.getElementById('figmaToken');
+    f.type = f.type === 'password' ? 'text' : 'password';
+  }
+  function toggleAI() {
+    aiEnabled = !aiEnabled;
+    document.getElementById('aiToggle').classList.toggle('on', aiEnabled);
+  }
+  function toggleTS() {
+    tsEnabled = !tsEnabled;
+    document.getElementById('tsToggle').classList.toggle('on', tsEnabled);
+  }
+
+  function onFrameworkChange() {
+    const fw = document.getElementById('framework').value;
+    const vSel = document.getElementById('version');
+    vSel.innerHTML = VERSIONS[fw].map(v => `<option value="${v}">${LABELS[fw]?.[v] || v}</option>`).join('');
+
+    const showStyle = SHOW_STYLING.includes(fw);
+    document.getElementById('styling').closest('.form-group').style.display = showStyle ? '' : 'none';
+    document.getElementById('tailwindVer').closest('.form-group').style.display = showStyle ? '' : 'none';
+    checkCompat();
+  }
+
+  const apiUrl = (path) => (window.FF_API && window.FF_API.url ? window.FF_API.url(path) : path);
+
+  function checkCompat() {
+    const fw = document.getElementById('framework').value;
+    const v = document.getElementById('version').value;
+    const tw = document.getElementById('tailwindVer').value;
+    const el = document.getElementById('compatResult');
+
+    let warn = null;
+    if (fw === 'vue' && v === '2') warn = '⚠ Vue 2 reached EOL December 2023';
+    if (fw === 'flutter' && v === '2') warn = '⚠ Flutter 2 is outdated — consider Flutter 3';
+    if (fw === 'nextjs' && v === '12' && tw === '4') warn = '⚠ Next.js 12 + Tailwind 4 may be incompatible — using Tailwind 3';
+
+    if (warn) {
+      el.innerHTML = `<div class="compat-badge compat-warn">⚠ ${warn}</div>`;
+    } else {
+      el.innerHTML = `<div class="compat-badge compat-ok">✓ Compatible combination</div>`;
+    }
+  }
+
+  async function loadUsage() {
+    const planBadge = document.getElementById('planBadge');
+    if (!window.FF_AUTH) {
+      planBadge.textContent = 'GUEST';
+      return;
+    }
+    const accessToken = await window.FF_AUTH.getAccessToken();
+    if (!accessToken) {
+      planBadge.textContent = 'GUEST';
+      document.getElementById('usageCount').textContent = '0 / 3';
+      document.getElementById('usageFill').style.width = '0%';
+      return;
+    }
+
+    try {
+      const res = await fetch(apiUrl('/me'), {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const plan = (data.plan || 'free').toUpperCase();
+      const usage = data.usage || {};
+      const current = usage.current || 0;
+      const limit = usage.limit ?? 0;
+
+      planBadge.textContent = `${plan} PLAN`;
+      if (limit > 0) {
+        document.getElementById('usageCount').textContent = `${current} / ${limit}`;
+        const pct = Math.min(100, Math.round((current / limit) * 100));
+        document.getElementById('usageFill').style.width = `${pct}%`;
+      } else {
+        document.getElementById('usageCount').textContent = `${current} / ∞`;
+        document.getElementById('usageFill').style.width = '100%';
+      }
+    } catch (_) {
+      // Ignore usage errors in demo mode
+    }
+  }
+
+  async function generate() {
+    const url = document.getElementById('figmaUrl').value.trim();
+    const token = document.getElementById('figmaToken').value.trim();
+    if (!url) { alert('Please enter a Figma URL or file key'); return; }
+    if (!token) { alert('Please enter your Figma Personal Access Token'); return; }
+
+    const fw = document.getElementById('framework').value;
+    const v = document.getElementById('version').value;
+    const styling = document.getElementById('styling').value;
+    const tw = document.getElementById('tailwindVer').value;
+    const pm = document.getElementById('pm').value;
+
+    // UI: loading state
+    const btn = document.getElementById('genBtn');
+    btn.disabled = true;
+    document.getElementById('genBtnText').textContent = 'Generating...';
+    document.getElementById('genSpinner').style.display = 'block';
+    document.getElementById('outputPlaceholder').style.display = 'none';
+    document.getElementById('outputResult').classList.remove('visible');
+    document.getElementById('fwInfoCard').style.display = 'none';
+
+    // Show progress card
+    const progressCard = document.getElementById('progressCard');
+    progressCard.classList.add('visible');
+    runProgress();
+
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (window.FF_AUTH) {
+        const accessToken = await window.FF_AUTH.getAccessToken();
+        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+      }
+
+      const res = await fetch(apiUrl('/generate'), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          figma_url: url, figma_token: token,
+          framework: fw, version: v,
+          styling, tailwind_version: tw,
+          package_manager: pm, ai_optimize: aiEnabled,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.detail || 'Generation failed');
+
+      if (data.download_url) {
+        downloadUrl = data.download_url.startsWith('/') ? apiUrl(data.download_url) : data.download_url;
+      }
+      showOutput(data, fw, v, tw, pm);
+      loadUsage();
+
+    } catch (err) {
+      // Demo mode — show mock output
+      showDemoOutput(fw, v, tw, pm);
+    } finally {
+      btn.disabled = false;
+      document.getElementById('genBtnText').textContent = '⚡ Generate Project';
+      document.getElementById('genSpinner').style.display = 'none';
+    }
+  }
+
+  function runProgress() {
+    const steps = [
+      {dot:'dot1',txt:'txt1',label:'Fetching Figma design...'},
+      {dot:'dot2',txt:'txt2',label:'Parsing component tree...'},
+      {dot:'dot3',txt:'txt3',label:'Checking version compatibility...'},
+      {dot:'dot4',txt:'txt4',label:'Generating components...'},
+      {dot:'dot5',txt:'txt5',label:'Building project files...'},
+      {dot:'dot6',txt:'txt6',label:'Packaging zip...'},
+    ];
+    steps.forEach((s, i) => {
+      const dot = document.getElementById(s.dot);
+      const txt = document.getElementById(s.txt);
+      dot.className = 'progress-dot';
+      txt.className = 'progress-text';
+      txt.textContent = s.label;
+      setTimeout(() => {
+        dot.className = 'progress-dot active';
+        txt.className = 'progress-text active';
+        if (i > 0) {
+          document.getElementById(steps[i-1].dot).className = 'progress-dot done';
+          document.getElementById(steps[i-1].dot).textContent = '✓';
+          document.getElementById(steps[i-1].txt).className = 'progress-text done';
+        }
+      }, i * 700);
+      setTimeout(() => {
+        if (i === steps.length - 1) {
+          dot.className = 'progress-dot done'; dot.textContent = '✓';
+          txt.className = 'progress-text done';
+        }
+      }, steps.length * 700);
+    });
+  }
+
+  function showOutput(data, fw, v, tw, pm) {
+    const files = [
+      {name:'package.json', icon:'📄', size:'1.2 KB'},
+      {name:`src/components/Navbar.jsx`, icon:'⚛️', size:'0.9 KB'},
+      {name:`src/components/HeroCard.jsx`, icon:'⚛️', size:'1.4 KB'},
+      {name:`src/app/layout.jsx`, icon:'📄', size:'0.4 KB'},
+      {name:`src/app/page.jsx`, icon:'📄', size:'0.6 KB'},
+      {name:'tailwind.config.js', icon:'🎨', size:'0.3 KB'},
+      {name:'next.config.js', icon:'⚙️', size:'0.2 KB'},
+      {name:'README.md', icon:'📖', size:'2.1 KB'},
+    ];
+    renderOutput(files, data.download_url || '#', fw, v, tw, pm);
+    data.warnings?.forEach(w => console.warn('FigmaForge:', w));
+    showFwInfo(data.framework_info || {}, fw, v, pm);
+  }
+
+  function showDemoOutput(fw, v, tw, pm) {
+    const ext = fw === 'flutter' ? 'dart' : fw === 'swiftui' ? 'swift' : 'jsx';
+    const files = [
+      {name:'package.json', icon:'📄', size:'1.2 KB'},
+      {name:`src/components/Navbar.${ext}`, icon:'⚛️', size:'0.9 KB'},
+      {name:`src/components/HeroSection.${ext}`, icon:'⚛️', size:'1.6 KB'},
+      {name:`src/components/Footer.${ext}`, icon:'⚛️', size:'0.7 KB'},
+      {name:'tailwind.config.js', icon:'🎨', size:'0.3 KB'},
+      {name:'README.md', icon:'📖', size:'2.1 KB'},
+    ];
+    renderOutput(files, '#', fw, v, tw, pm);
+    const info = {...(PINNED[fw]?.[v]||{}), ...(tw?TW_PINS[tw]:{})}
+    showFwInfo(info, fw, v, pm);
+  }
+
+  function renderOutput(files, dlUrl, fw, v, tw, pm) {
+    document.getElementById('outputPlaceholder').style.display = 'none';
+    const result = document.getElementById('outputResult');
+    result.classList.add('visible');
+
+    document.getElementById('fileList').innerHTML = files.map(f =>
+      `<div class="file-item"><span class="file-icon">${f.icon}</span><span class="file-name">${f.name}</span><span class="file-size">${f.size}</span></div>`
+    ).join('');
+
+    const dlBtn = document.getElementById('downloadBtn');
+    dlBtn.onclick = () => {
+      if (dlUrl !== '#') window.open(dlUrl);
+      else alert('Connect the backend API to enable real downloads.\nFor demo: the zip would be at /download/{project_id}');
+    };
+  }
+
+  function showFwInfo(info, fw, v, pm) {
+    const card = document.getElementById('fwInfoCard');
+    card.style.display = 'block';
+    const allDeps = info && Object.keys(info).length ? info : {...(PINNED[fw]?.[v]||{}), ...(TW_PINS[3]||{})};
+    document.getElementById('fwInfoContent').innerHTML =
+      Object.entries(allDeps).map(([k,val]) => `<span style="color:var(--muted)">${k}</span>: <span style="color:var(--amber)">${val}</span>`).join('<br/>');
+
+    const cmds = {npm:'npm install && npm run dev', yarn:'yarn && yarn dev', pnpm:'pnpm install && pnpm dev', bun:'bun install && bun dev'};
+    const cmd = fw === 'flutter' ? 'flutter pub get && flutter run' : fw === 'swiftui' ? 'swift run' : (cmds[pm]||'npm install && npm run dev');
+    document.getElementById('nextSteps').innerHTML = `cd figmaforge-output<br/>${cmd}`;
+  }
+
+  // Init
+  onFrameworkChange();
+  checkCompat();
+  if (window.FF_AUTH) {
+    window.FF_AUTH.onChange(() => loadUsage());
+  } else {
+    loadUsage();
+  }
+</script>
+</body>
+</html>
